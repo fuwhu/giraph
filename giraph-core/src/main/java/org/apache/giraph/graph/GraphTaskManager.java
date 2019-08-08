@@ -53,6 +53,7 @@ import org.apache.giraph.metrics.GiraphTimerContext;
 import org.apache.giraph.metrics.ResetSuperstepMetricsObserver;
 import org.apache.giraph.metrics.SuperstepMetricsRegistry;
 import org.apache.giraph.ooc.OutOfCoreEngine;
+import org.apache.giraph.partition.Partition;
 import org.apache.giraph.partition.PartitionOwner;
 import org.apache.giraph.partition.PartitionStats;
 import org.apache.giraph.partition.PartitionStore;
@@ -147,7 +148,7 @@ end[PURE_YARN]*/
   private GraphFunctions graphFunctions = GraphFunctions.UNKNOWN;
   /** Superstep stats */
   private FinishedSuperstepStats finishedSuperstepStats =
-      new FinishedSuperstepStats(0, false, 0, 0, false, CheckpointStatus.NONE);
+      new FinishedSuperstepStats(0, false, 0, 0, false, CheckpointStatus.NONE, false);
   /** Job progress tracker */
   private JobProgressTrackerClient jobProgressTracker;
 
@@ -366,7 +367,7 @@ end[PURE_YARN]*/
       // execute the current superstep
       if (numPartitions > 0) {
         processGraphPartitions(context, partitionStatsList, graphState,
-          messageStore, numThreads);
+          messageStore, numThreads, finishedSuperstepStats.shouldWakeUpAllVertices());
       }
       finishedSuperstepStats = completeSuperstepAndCollectStats(
         partitionStatsList, superstepTimerContext);
@@ -784,6 +785,54 @@ end[PURE_YARN]*/
     }
   }
 
+//  private void wakeUpAllVertices() {
+//    PartitionStore<I, V, E> partitionStore = serviceWorker.getPartitionStore();
+//    while (true) {
+//
+//      Partition<I, V, E> partition = partitionStore.getNextPartition();
+//      if (partition == null) {
+//        break;
+//      }
+//      try {
+//        serviceWorker.getServerData().resolvePartitionMutation(partition);
+//        PartitionStats partitionStats = computePartition(
+//            computation, partition, oocEngine,
+//            serviceWorker.getConfiguration().getIncomingMessageClasses()
+//                .ignoreExistingVertices());
+//        partitionStatsList.add(partitionStats);
+//        long partitionMsgs = workerClientRequestProcessor.resetMessageCount();
+//        partitionStats.addMessagesSentCount(partitionMsgs);
+//        messagesSentCounter.inc(partitionMsgs);
+//        long partitionMsgBytes =
+//            workerClientRequestProcessor.resetMessageBytesCount();
+//        partitionStats.addMessageBytesSentCount(partitionMsgBytes);
+//        messageBytesSentCounter.inc(partitionMsgBytes);
+//        timedLogger.info("call: Completed " +
+//            partitionStatsList.size() + " partitions, " +
+//            partitionStore.getNumPartitions() + " remaining " +
+//            MemoryUtils.getRuntimeMemoryStats());
+//        long timeDoingGCWhileProcessing =
+//            taskManager.getSuperstepGCTime() - startGCTime;
+//        timeDoingGC += timeDoingGCWhileProcessing;
+//        long timeProcessingPartition =
+//            System.currentTimeMillis() - startProcessingTime -
+//                timeDoingGCWhileProcessing;
+//        timeProcessing += timeProcessingPartition;
+//        partitionStats.setComputeMs(timeProcessingPartition);
+//      } catch (IOException e) {
+//        throw new IllegalStateException("call: Caught unexpected IOException," +
+//            " failing.", e);
+//      } catch (InterruptedException e) {
+//        throw new IllegalStateException("call: Caught unexpected " +
+//            "InterruptedException, failing.", e);
+//      } finally {
+//        partitionStore.putPartition(partition);
+//      }
+//      histogramComputePerPartition.update(
+//          System.currentTimeMillis() - startTime);
+//    }
+//  }
+
   /**
    * Process graph data partitions active in this superstep.
    * @param context handle to the underlying cluster framework
@@ -796,7 +845,8 @@ end[PURE_YARN]*/
       List<PartitionStats> partitionStatsList,
       final GraphState graphState,
       final MessageStore<I, Writable> messageStore,
-      int numThreads) {
+      int numThreads,
+      boolean wakeUpAllVertices) {
     PartitionStore<I, V, E> partitionStore = serviceWorker.getPartitionStore();
     long verticesToCompute = 0;
     for (Integer partitionId : partitionStore.getPartitionIds()) {
@@ -820,7 +870,8 @@ end[PURE_YARN]*/
               graphState,
               messageStore,
               conf,
-              serviceWorker);
+              serviceWorker,
+              wakeUpAllVertices);
         }
       };
     List<Collection<PartitionStats>> results =
@@ -850,7 +901,7 @@ end[PURE_YARN]*/
         serviceWorker.getRestartedSuperstep());
       finishedSuperstepStats = new FinishedSuperstepStats(0, false,
           vertexEdgeCount.getVertexCount(), vertexEdgeCount.getEdgeCount(),
-          false, CheckpointStatus.NONE);
+          false, CheckpointStatus.NONE, false);
       return true;
     }
     return false;

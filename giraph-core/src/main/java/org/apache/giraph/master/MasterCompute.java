@@ -294,4 +294,12 @@ public abstract class MasterCompute
   public final void setSuperstepClasses(SuperstepClasses superstepClasses) {
     this.superstepClasses = superstepClasses;
   }
+
+  public final void enableWakeUpAllVertices() {
+    this.serviceMaster.enalbeWakeUpAllVertices();
+  }
+
+  public final void disableWakeUpAllVertices() {
+    this.serviceMaster.disableWakeUpAllVertices();
+  }
 }

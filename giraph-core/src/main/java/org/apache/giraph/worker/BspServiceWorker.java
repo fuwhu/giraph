@@ -467,7 +467,7 @@ public class BspServiceWorker<I extends WritableComparable,
     if (getRestartedSuperstep() != UNSET_SUPERSTEP) {
       setCachedSuperstep(getRestartedSuperstep());
       return new FinishedSuperstepStats(0, false, 0, 0, true,
-          CheckpointStatus.NONE);
+          CheckpointStatus.NONE, false);
     }
 
     JSONObject jobState = getJobState();
@@ -485,7 +485,7 @@ public class BspServiceWorker<I extends WritableComparable,
           }
           setRestartedSuperstep(getSuperstep());
           return new FinishedSuperstepStats(0, false, 0, 0, true,
-              CheckpointStatus.NONE);
+              CheckpointStatus.NONE, false);
         }
       } catch (JSONException e) {
         throw new RuntimeException(
@@ -834,7 +834,8 @@ else[HADOOP_NON_SECURE]*/
         globalStats.getVertexCount(),
         globalStats.getEdgeCount(),
         false,
-        globalStats.getCheckpointStatus());
+        globalStats.getCheckpointStatus(),
+        globalStats.getWakeUpAllVertices());
   }
 
   /**

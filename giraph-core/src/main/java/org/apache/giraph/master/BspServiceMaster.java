@@ -186,6 +186,31 @@ public class BspServiceMaster<I extends WritableComparable,
   /** Checks if checkpointing supported */
   private final CheckpointSupportedChecker checkpointSupportedChecker;
 
+  /** Control whether wake up all vertices before executing new super step **/
+  private boolean wakeUpAllVertices = false;
+
+  /**
+   * whether need to wake up all vertices before executing new super step.
+   * @return {@code wakeUpAllVertices}
+   */
+  public boolean shouldWakeUpAllVertices() {
+    return wakeUpAllVertices;
+  }
+
+  /**
+   * Enable workers to wake up all vertices before executing new super step.
+   */
+  public void enalbeWakeUpAllVertices() {
+    wakeUpAllVertices = true;
+  }
+
+  /**
+   * Disable workers to wake up all vertices before executing new super step.
+   */
+  public void disableWakeUpAllVertices() {
+    wakeUpAllVertices = false;
+  }
+
   /**
    * Constructor for setting up the master.
    *
@@ -975,6 +1000,8 @@ public class BspServiceMaster<I extends WritableComparable,
       globalStats.addPartitionStats(partitionStats);
       allPartitionStatsList.add(partitionStats);
     }
+
+    globalStats.setWakeUpAllVertices(shouldWakeUpAllVertices());
 
     if (conf.metricsEnabled()) {
       if (GiraphConstants.METRICS_DIRECTORY.isDefaultValue(conf)) {

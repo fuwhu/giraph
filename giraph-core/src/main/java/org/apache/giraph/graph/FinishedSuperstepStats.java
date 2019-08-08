@@ -35,6 +35,9 @@ public class FinishedSuperstepStats extends VertexEdgeCount {
    */
   private final CheckpointStatus checkpointStatus;
 
+  /** Control whether wake up all vertices before executing new super step **/
+  private final boolean wakeUpAllVertices;
+
   /**
    * Constructor.
    *
@@ -44,22 +47,29 @@ public class FinishedSuperstepStats extends VertexEdgeCount {
    * @param numEdges Number of edges
    * @param mustLoadCheckpoint Has to load a checkpoint?
    * @param checkpointStatus Should we checkpoint after this superstep?
+   * @param wakeUpAllVertices whether need to wake up all vertices before executing new super step
    */
   public FinishedSuperstepStats(long numLocalVertices,
                                 boolean allVerticesHalted,
                                 long numVertices,
                                 long numEdges,
                                 boolean mustLoadCheckpoint,
-                                CheckpointStatus checkpointStatus) {
+                                CheckpointStatus checkpointStatus,
+                                boolean wakeUpAllVertices) {
     super(numVertices, numEdges, 0);
     this.localVertexCount = numLocalVertices;
     this.allVerticesHalted = allVerticesHalted;
     this.mustLoadCheckpoint = mustLoadCheckpoint;
     this.checkpointStatus = checkpointStatus;
+    this.wakeUpAllVertices = wakeUpAllVertices;
   }
 
   public long getLocalVertexCount() {
     return localVertexCount;
+  }
+
+  public boolean shouldWakeUpAllVertices() {
+    return wakeUpAllVertices;
   }
 
   /**

@@ -84,6 +84,8 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   private final Mapper<?, ?, ?, ?>.Context context;
   /** Graph state */
   private final GraphState graphState;
+  /** Whether need to wake up all vertices before computation **/
+  private final boolean wakeUpAllVertices;
   /** Message store */
   private final MessageStore<I, M1> messageStore;
   /** Configuration */
@@ -123,12 +125,14 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   public ComputeCallable(Mapper<?, ?, ?, ?>.Context context,
       GraphState graphState, MessageStore<I, M1> messageStore,
       ImmutableClassesGiraphConfiguration<I, V, E> configuration,
-      CentralizedServiceWorker<I, V, E> serviceWorker) {
+      CentralizedServiceWorker<I, V, E> serviceWorker,
+      boolean wakeUpAllVertices) {
     this.context = context;
     this.configuration = configuration;
     this.messageStore = messageStore;
     this.serviceWorker = serviceWorker;
     this.graphState = graphState;
+    this.wakeUpAllVertices = wakeUpAllVertices;
 
     SuperstepMetricsRegistry metrics = GiraphMetrics.get().perSuperstep();
     messagesSentCounter = metrics.getCounter(MetricNames.MESSAGES_SENT);
@@ -190,6 +194,9 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       startGCTime = taskManager.getSuperstepGCTime();
       try {
         serviceWorker.getServerData().resolvePartitionMutation(partition);
+        if (wakeUpAllVertices){
+          wakeUpPartition(partition);
+        }
         PartitionStats partitionStats = computePartition(
             computation, partition, oocEngine,
             serviceWorker.getConfiguration().getIncomingMessageClasses()
@@ -265,6 +272,18 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       oocEngine.processingThreadFinish();
     }
     return partitionStatsList;
+  }
+
+  /**
+   * Wake up all vertices in the specified partition.
+   * @param partition the partition to wake up.
+   */
+  private void wakeUpPartition(Partition<I, V, E> partition) {
+    synchronized (partition) {
+      for (Vertex<I, V, E> vertex : partition) {
+          vertex.wakeUp();
+      }
+    }
   }
 
   /**

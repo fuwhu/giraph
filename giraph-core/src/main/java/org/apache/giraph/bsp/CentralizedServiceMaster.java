@@ -180,4 +180,20 @@ public interface CentralizedServiceMaster<I extends WritableComparable,
    */
   void cleanup(SuperstepState superstepState)
     throws IOException, InterruptedException;
+
+  /**
+   * Whether need to wake up all vertices before executing new super step.
+   * @return an boolean indicating whether need to wake up all vertices.
+   */
+  boolean shouldWakeUpAllVertices();
+
+  /**
+   * Enable workers to wake up all vertices before executing new super step.
+   */
+  void enalbeWakeUpAllVertices();
+
+  /**
+   * Disable workers to wake up all vertices before executing new super step.
+   */
+  void disableWakeUpAllVertices();
 }

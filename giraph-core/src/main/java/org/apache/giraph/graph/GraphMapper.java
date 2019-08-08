@@ -18,6 +18,7 @@
 
 package org.apache.giraph.graph;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.giraph.writable.kryo.KryoWritableWrapper;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -85,9 +86,17 @@ public class GraphMapper<I extends WritableComparable, V extends Writable,
     // waiting for ZooKeeper to timeout and delete the ephemeral znodes
     try {
       setup(context);
+      int recordCnt = 0;
       while (context.nextKeyValue()) {
+        Object key = context.getCurrentKey();
+        Object value = context.getCurrentValue();
+        if(recordCnt == 0) {
+          LOG.info("First record, key is " + key + ", value is " + value);
+        }
         graphTaskManager.execute();
+        recordCnt += 1;
       }
+      LOG.info("record count of this mapper is " + recordCnt);
       cleanup(context);
       // Checkstyle exception due to needing to dump ZooKeeper failure
       // on exception
@@ -106,5 +115,4 @@ public class GraphMapper<I extends WritableComparable, V extends Writable,
           "run: Caught an unrecoverable exception " + e.getMessage(), e);
     }
   }
-
 }

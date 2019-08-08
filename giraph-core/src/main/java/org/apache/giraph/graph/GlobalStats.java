@@ -48,6 +48,8 @@ public class GlobalStats implements Writable {
   private long oocLoadBytesCount = 0;
   /** Lowest percentage of graph in memory throughout the execution */
   private int lowestGraphPercentageInMemory = 100;
+  /** Control whether wake up all vertices before executing new super step **/
+  private boolean wakeUpAllVertices = false;
   /**
    * Master's decision on whether we should checkpoint and
    * what to do next.
@@ -64,6 +66,14 @@ public class GlobalStats implements Writable {
     this.vertexCount += partitionStats.getVertexCount();
     this.finishedVertexCount += partitionStats.getFinishedVertexCount();
     this.edgeCount += partitionStats.getEdgeCount();
+  }
+
+  public boolean getWakeUpAllVertices() {
+    return wakeUpAllVertices;
+  }
+
+  public void setWakeUpAllVertices(boolean wakeUpAllVertices) {
+    this.wakeUpAllVertices = wakeUpAllVertices;
   }
 
   public long getVertexCount() {
