@@ -987,9 +987,6 @@ under the License.
         <module>giraph-gora</module>
         <module>giraph-dist</module>
       </modules>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <hadoop.version>1.2.1</hadoop.version>
         <munge.symbols>HADOOP_NON_JOBCONTEXT_IS_INTERFACE,HADOOP_1_SECURITY,HADOOP_1_SECRET_MANAGER,STATIC_SASL_SYMBOL</munge.symbols>
@@ -1076,6 +1073,9 @@ under the License.
       <modules>
         <module>giraph-dist</module>
       </modules>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <hadoop.version>SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION</hadoop.version>
         <munge.symbols>PURE_YARN,STATIC_SASL_SYMBOL</munge.symbols>
@@ -1139,6 +1139,9 @@ under the License.
         <module>giraph-gora</module>
         <module>giraph-dist</module>
       </modules>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
        <properties>
          <hadoop.version>2.5.1</hadoop.version>
          <!-- TODO: add these checks eventually -->

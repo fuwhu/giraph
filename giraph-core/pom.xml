@@ -186,9 +186,6 @@ under the License.
 
     <profile>
       <id>hadoop_1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <build>
         <plugins>
           <plugin>
@@ -332,6 +329,9 @@ under the License.
     <!-- Unmunged profiles are below. -->
     <profile>
       <id>hadoop_2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
           <plugin>
